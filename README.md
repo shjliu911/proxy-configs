@@ -1,0 +1,41 @@
+# proxy-configs
+
+常用代理软件的配置模板。**全部以 Loon 配置为基准**：四个模板的策略组命名、地区筛选正则、分流规则顺序完全同构，换软件不用重新理解一套结构。节点、机场订阅、MITM 证书私钥均已替换为占位符，可直接公开。
+
+## 基准与对应关系
+
+以 `loon/loon-template.conf` 为蓝本，其他三个模板按同一张映射表对齐：
+
+| Loon 结构 | Surge | Quantumult X | Clash (mihomo) |
+| --- | --- | --- | --- |
+| `[Proxy Group]` 场景组（AI平台/电报消息/国外媒体…） | `[Proxy Group]` 同名组 | `[policy]` 同名 static 组 | `proxy-groups` 同名组 |
+| `[Remote Filter]` 六地区正则 | 地区组 `policy-regex-filter` | `server-tag-regex` | 地区组 `filter`（url-test） |
+| `[Remote Rule]` 分流顺序 | `[Rule]` RULE-SET 同序 | `[filter_remote]` 同序 | `rule-providers` + `rules` 同序 |
+| FINAL / 节点选择 / 全球代理 | 同名 | 🚀 节点选择 / 🌍 全球代理 | 同名 |
+
+分流顺序（四个模板一致）：**去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体 → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia → ChinaMaxNoMedia 直连 → Global 走代理**。
+
+规则统一来自两个仓库（四个模板引用同一批文件，行为一致）：
+- [shjliu911/ios-rule-script-mirror](https://github.com/shjliu911/ios-rule-script-mirror) — blackmatrix7 规则镜像（按软件子目录取用）
+- [shjliu911/surge-ai-lists](https://github.com/shjliu911/surge-ai-lists) — AI 分流（Surge/.list、Clash/.yaml、QX quanx/ 三种格式）
+
+## 目录
+
+| 目录 | 软件 | 说明 |
+| --- | --- | --- |
+| `loon/` | Loon (iOS) | **基准模板**。KOP 资源解析器 + `[Remote Filter]` 地区正则 + 场景化策略组（Qure 图标） |
+| `surge/` | Surge for Mac / iOS | 国内 DoH + 游戏主机 real-ip 白名单；地区组用 `policy-regex-filter` 挂机场订阅 |
+| `quantumultx/` | Quantumult X (iOS) | KOP-XIAO 解析器 + ip-api 中文节点信息；`server-tag-regex` 地区组 |
+| `clash/` | Clash / OpenClash (mihomo) | `proxy-providers` 挂订阅 + `rule-providers` 远程规则；地区组 url-test 自动选优 |
+
+## 使用
+
+各模板顶部注释有对应软件的操作步骤。通用占位符：
+
+- `YOUR-AIRPORT-SUBSCRIPTION-URL` — 机场订阅地址
+- `YOUR_CA_PASSPHRASE` / `YOUR_CA_P12_BASE64` — MITM 证书（在各软件 UI 里重新生成即可，无需手填）
+- `YOUR_SS_PASSWORD` 等 — 本地示例节点的密码
+
+## 免责声明
+
+模板仅用于个人学习与备份。请遵守当地法律法规。
