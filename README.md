@@ -13,7 +13,16 @@
 | `[Remote Rule]` 分流顺序 | `[Rule]` RULE-SET 同序 | `[filter_remote]` 同序 | `rule-providers` + `rules` 同序 |
 | FINAL / 节点选择 / 全球代理 | 同名 | 🚀 节点选择 / 🌍 全球代理 | 同名 |
 
-分流顺序（四个模板一致）：**去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体 → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia → ChinaMaxNoMedia 直连 → Global 走代理**。
+分流顺序（四个模板一致）：**去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体 → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia → 微软服务直连（Microsoft.list）→ ChinaMaxNoMedia 直连 → Global 走代理**。
+
+2026-10-30 分流审计（4 模板 × 逐域名命中探测 + 对抗验证）后加入的修正：
+
+- **微软服务直连**：ChinaMaxNoMedia 大表缺 `microsoft.com` 主域，微软全家桶（bing/outlook/azure/live/msn…）实际漏到全球代理；四模板统一新增 `Microsoft.list`（"微软服务"组，默认 DIRECT 可切节点）。
+- **裸后缀豁免**：ChinaMaxNoMedia 携带裸 `DOMAIN-SUFFIX,ms` / `cn`，截杀 `aka.ms`/`1drv.ms` 等 22 个微软基础设施域与 futu.cn 等 9 个境外券商 .cn 域；统一前置豁免。
+- **广告表误杀豁免（Clash）**：上游 Advertising_Domain.yaml 误收网易云/腾讯视频/爱奇艺接口、4paradigm、gvt2/ggpht/cookielaw/onetrust，9 条前置豁免。
+- **QX 局域网顶置**：AdvertisingTest 表内含 `10.72.25.0/24` REJECT 会击穿内网直连，Lan.list 顶置为第一优先。
+- **QX GEOIP 补齐**：补 KR/TW/CN geoip 兜底，与其他三模板一致。
+- **Loon 死源修复**：kelee.one 插件源→GitHub 镜像 mihoyo-typ/KeleeOne；Sub-Store 解析器 GitLab 旧址→GitHub releases；Tartarus Loon-Script 五条 404 脚本置为 disabled。
 
 规则统一来自两个仓库（四个模板引用同一批文件，行为一致）：
 - [shjliu911/ios-rule-script-mirror](https://github.com/shjliu911/ios-rule-script-mirror) — blackmatrix7 规则镜像（按软件子目录取用）

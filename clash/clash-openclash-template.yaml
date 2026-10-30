@@ -10,6 +10,7 @@
 #   1. proxy-providers 的 url 换成你的机场订阅(支持 v2ray/clash 格式)
 #   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
 #   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
+#      (2026-10-30 审计补丁:微软服务直连表、.ms/.cn 裸后缀豁免、广告表误杀 9 条豁免)
 #      去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体
 #      → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia
 #      → ChinaMaxNoMedia 直连 → Global 走全球代理
@@ -191,6 +192,12 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
+
+  - name: 微软服务
+    type: select
+    proxies:
+      - DIRECT
+      - 节点选择
 
   - name: Testflight
     type: select
@@ -429,6 +436,13 @@ rule-providers:
     url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/GlobalMedia/GlobalMedia_Domain.yaml"
     path: ./rules/global-media.yaml
     interval: 86400
+  microsoft:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Microsoft/Microsoft.yaml"
+    path: ./rules/microsoft.yaml
+    interval: 86400
   chinamax-nomedia:
     type: http
     behavior: domain
@@ -453,6 +467,17 @@ rules:
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+
+  # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
+  - DOMAIN-SUFFIX,api.iplay.163.com,网易音乐
+  - DOMAIN-SUFFIX,mam.netease.com,网易音乐
+  - DOMAIN-SUFFIX,pgdt.gtimg.cn,腾讯视频
+  - DOMAIN-SUFFIX,71.am,爱奇艺
+  - DOMAIN-SUFFIX,4paradigm.com,DIRECT
+  - DOMAIN-SUFFIX,gvt2.com,油管视频
+  - DOMAIN-SUFFIX,ggpht.cn,油管视频
+  - DOMAIN-SUFFIX,cookielaw.org,奈飞视频
+  - DOMAIN-SUFFIX,onetrust.com,奈飞视频
 
   # ── 1. 去广告(与 Loon 一号位相同,直接 REJECT) ──
   - RULE-SET,advertising,REJECT
@@ -491,6 +516,42 @@ rules:
 
   # ── 国外泛媒体兜底(Disney+/HBO/Hulu 等) ──
   - RULE-SET,global-media,国外媒体
+
+  # ── 4.5 微软服务直连（ChinaMax 大表缺 microsoft.com 主域,须显式引用;排在 AI 行之后不遮蔽 AI 分流） ──
+  - RULE-SET,microsoft,微软服务
+
+  # ChinaMaxNoMedia 裸后缀截杀豁免(裸 DOMAIN-SUFFIX,ms / +.cn 会强制直连以下境外域)
+  - DOMAIN-SUFFIX,1drv.ms,微软服务
+  - DOMAIN-SUFFIX,aka.ms,微软服务
+  - DOMAIN-SUFFIX,appcenter.ms,微软服务
+  - DOMAIN-SUFFIX,aria.ms,微软服务
+  - DOMAIN-SUFFIX,ch9.ms,微软服务
+  - DOMAIN-SUFFIX,dictate.ms,微软服务
+  - DOMAIN-SUFFIX,google.ms,微软服务
+  - DOMAIN-SUFFIX,hummingbird.ms,微软服务
+  - DOMAIN-SUFFIX,jwt.ms,微软服务
+  - DOMAIN-SUFFIX,nico.ms,微软服务
+  - DOMAIN-SUFFIX,ntp.nat.ms,微软服务
+  - DOMAIN-SUFFIX,onestore.ms,微软服务
+  - DOMAIN-SUFFIX,rsg.ms,微软服务
+  - DOMAIN-SUFFIX,sm.ms,微软服务
+  - DOMAIN-SUFFIX,staffhub.ms,微软服务
+  - DOMAIN-SUFFIX,svc.ms,微软服务
+  - DOMAIN-SUFFIX,techhub.ms,微软服务
+  - DOMAIN-SUFFIX,visa.com.ms,微软服务
+  - DOMAIN-SUFFIX,wbd.ms,微软服务
+  - DOMAIN-SUFFIX,gfx.ms,微软服务
+  - DOMAIN-SUFFIX,nyti.ms,微软服务
+  - DOMAIN-SUFFIX,sfx.ms,微软服务
+  - DOMAIN-SUFFIX,futu.cn,全球代理
+  - DOMAIN-SUFFIX,futubull.cn,全球代理
+  - DOMAIN-SUFFIX,longbridge.cn,全球代理
+  - DOMAIN-SUFFIX,longportapp.cn,全球代理
+  - DOMAIN-SUFFIX,tigerbbs.cn,全球代理
+  - DOMAIN-SUFFIX,schwab.com.cn,全球代理
+  - DOMAIN-SUFFIX,skytigris.cn,全球代理
+  - DOMAIN-SUFFIX,jinrieluosi.cn,全球代理
+  - DOMAIN-SUFFIX,zhijianfengyi.cn,全球代理
 
   # ── 兜底大列表:国内直连必须在全球代理之前! ──
   - RULE-SET,chinamax-nomedia,国内直连
