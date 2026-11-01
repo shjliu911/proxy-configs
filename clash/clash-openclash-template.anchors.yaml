@@ -82,23 +82,23 @@ g_manual: &g_manual
   use: *airport-ref
 
 # 功能组候选列表锚点(TheFullSmart 风格:不同锚点表达不同优先级)
-SelectFinal: &SelectFinal {type: select, proxies: [全球代理, 节点选择]}
-SelectMain: &SelectMain {type: select, proxies: [香港节点, 狮城节点, 美国节点, 韩国节点, 日本节点, 台湾节点], use: *airport-ref}
-SelectGlobal: &SelectGlobal {type: select, proxies: [节点选择, 美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 香港节点], use: *airport-ref}
+SelectFinal: &SelectFinal {type: select, proxies: [🌍 全球代理, 🚀 节点选择]}
+SelectMain: &SelectMain {type: select, proxies: [🇭🇰 香港节点, 🇸🇬 狮城节点, 🇺🇸 美国节点, 🇰🇷 韩国节点, 🇯🇵 日本节点, 🇹🇼 台湾节点], use: *airport-ref}
+SelectGlobal: &SelectGlobal {type: select, proxies: [🚀 节点选择, 🇺🇸 美国节点, 🇸🇬 狮城节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇹🇼 台湾节点, 🇭🇰 香港节点], use: *airport-ref}
 SelectAdBlock: &SelectAdBlock {type: select, proxies: [REJECT, DIRECT]}
-SelectAI: &SelectAI {type: select, proxies: [美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 香港节点, 节点选择]}
-SelectAIBrand: &SelectAIBrand {type: select, proxies: [美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 节点选择]}
-SelectJetBrains: &SelectJetBrains {type: select, proxies: [节点选择, 全球代理, 美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点]}
-SelectGoogle: &SelectGoogle {type: select, proxies: [美国节点, 狮城节点, 台湾节点, 香港节点, 日本节点]}
-SelectTelegram: &SelectTelegram {type: select, proxies: [香港节点, 狮城节点, 美国节点]}
-SelectForeignMedia: &SelectForeignMedia {type: select, proxies: [狮城节点, 香港节点, 台湾节点, 韩国节点, 美国节点]}
-SelectYouTube: &SelectYouTube {type: select, proxies: [香港节点, 狮城节点, 韩国节点, 美国节点]}
-SelectNetflix: &SelectNetflix {type: select, proxies: [狮城节点, 香港节点, 台湾节点, 美国节点]}
-SelectBahamut: &SelectBahamut {type: select, proxies: [台湾节点]}
-SelectCNVideo: &SelectCNVideo {type: select, proxies: [国内视频, 台湾节点, 香港节点]}
-SelectTencentVideo: &SelectTencentVideo {type: select, proxies: [国内视频, 香港节点, 台湾节点]}
+SelectAI: &SelectAI {type: select, proxies: [🇺🇸 美国节点, 🇸🇬 狮城节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇹🇼 台湾节点, 🇭🇰 香港节点, 🚀 节点选择]}
+SelectAIBrand: &SelectAIBrand {type: select, proxies: [🇺🇸 美国节点, 🇸🇬 狮城节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇹🇼 台湾节点, 🚀 节点选择]}
+SelectJetBrains: &SelectJetBrains {type: select, proxies: [🚀 节点选择, 🌍 全球代理, 🇺🇸 美国节点, 🇸🇬 狮城节点, 🇯🇵 日本节点, 🇰🇷 韩国节点, 🇹🇼 台湾节点]}
+SelectGoogle: &SelectGoogle {type: select, proxies: [🇺🇸 美国节点, 🇸🇬 狮城节点, 🇹🇼 台湾节点, 🇭🇰 香港节点, 🇯🇵 日本节点]}
+SelectTelegram: &SelectTelegram {type: select, proxies: [🇭🇰 香港节点, 🇸🇬 狮城节点, 🇺🇸 美国节点]}
+SelectForeignMedia: &SelectForeignMedia {type: select, proxies: [🇸🇬 狮城节点, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇰🇷 韩国节点, 🇺🇸 美国节点]}
+SelectYouTube: &SelectYouTube {type: select, proxies: [🇭🇰 香港节点, 🇸🇬 狮城节点, 🇰🇷 韩国节点, 🇺🇸 美国节点]}
+SelectNetflix: &SelectNetflix {type: select, proxies: [🇸🇬 狮城节点, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇺🇸 美国节点]}
+SelectBahamut: &SelectBahamut {type: select, proxies: [🇹🇼 台湾节点]}
+SelectCNVideo: &SelectCNVideo {type: select, proxies: [📺 国内视频, 🇹🇼 台湾节点, 🇭🇰 香港节点]}
+SelectTencentVideo: &SelectTencentVideo {type: select, proxies: [📺 国内视频, 🇭🇰 香港节点, 🇹🇼 台湾节点]}
 SelectDirect: &SelectDirect {type: select, proxies: [DIRECT]}
-SelectDirectNode: &SelectDirectNode {type: select, proxies: [DIRECT, 节点选择]}
+SelectDirectNode: &SelectDirectNode {type: select, proxies: [DIRECT, 🚀 节点选择]}
 
 # 规则提供者基础参数
 rp_domain: &rp_domain {type: http, behavior: domain, format: yaml, interval: 86400}
@@ -114,51 +114,51 @@ proxy-providers:
 # ---------- 策略组(命名与 Loon [Proxy Group] 一致) ----------
 proxy-groups:
   # 主入口
-  - {name: FINAL, <<: *SelectFinal}
-  - {name: 节点选择, <<: *SelectMain}
-  - {name: 全球代理, <<: *SelectGlobal}
+  - {name: 🎯 FINAL, <<: *SelectFinal}
+  - {name: 🚀 节点选择, <<: *SelectMain}
+  - {name: 🌍 全球代理, <<: *SelectGlobal}
 
   # 基础控制与安全组
-  - {name: 广告拦截, <<: *SelectAdBlock}
-  - {name: 私有种子, <<: *SelectDirectNode}
+  - {name: 🛑 广告拦截, <<: *SelectAdBlock}
+  - {name: 📥 私有种子, <<: *SelectDirectNode}
 
   # AI 专属服务组(各品牌独立分流)
-  - {name: 国内AI, <<: *SelectDirectNode}
-  - {name: OpenAI, <<: *SelectAIBrand}
-  - {name: Claude, <<: *SelectAIBrand}
-  - {name: Gemini, <<: *SelectAIBrand}
-  - {name: Copilot, <<: *SelectAIBrand}
-  - {name: JetBrains, <<: *SelectJetBrains}
-  - {name: AI平台, <<: *SelectAI}
+  - {name: 🤖 国内AI, <<: *SelectDirectNode}
+  - {name: 🤖 OpenAI, <<: *SelectAIBrand}
+  - {name: 💬 Claude, <<: *SelectAIBrand}
+  - {name: ✨ Gemini, <<: *SelectAIBrand}
+  - {name: 🐙 Copilot, <<: *SelectAIBrand}
+  - {name: 💻 JetBrains, <<: *SelectJetBrains}
+  - {name: 🚦 AI平台, <<: *SelectAI}
 
   # 平台与应用生态组
-  - {name: Testflight, <<: *SelectDirectNode}
-  - {name: 苹果服务, <<: *SelectDirectNode}
-  - {name: 微软服务, <<: *SelectDirectNode}
-  - {name: 谷歌服务, <<: *SelectGoogle}
-  - {name: 电报消息, <<: *SelectTelegram}
+  - {name: ✈️ Testflight, <<: *SelectDirectNode}
+  - {name: 🍎 苹果服务, <<: *SelectDirectNode}
+  - {name: 🪟 微软服务, <<: *SelectDirectNode}
+  - {name: 🔎 谷歌服务, <<: *SelectGoogle}
+  - {name: 📲 电报消息, <<: *SelectTelegram}
 
   # 垂直流媒体组
-  - {name: 哔哩哔哩, <<: *SelectCNVideo}
-  - {name: 爱奇艺, <<: *SelectCNVideo}
-  - {name: 腾讯视频, <<: *SelectTencentVideo}
-  - {name: 网易音乐, <<: *SelectDirect}
-  - {name: 油管视频, <<: *SelectYouTube}
-  - {name: 奈飞视频, <<: *SelectNetflix}
-  - {name: 巴哈姆特, <<: *SelectBahamut}
+  - {name: 📺 哔哩哔哩, <<: *SelectCNVideo}
+  - {name: 📺 爱奇艺, <<: *SelectCNVideo}
+  - {name: 📺 腾讯视频, <<: *SelectTencentVideo}
+  - {name: 🎵 网易音乐, <<: *SelectDirect}
+  - {name: 🎬 油管视频, <<: *SelectYouTube}
+  - {name: 🎬 奈飞视频, <<: *SelectNetflix}
+  - {name: 🎬 巴哈姆特, <<: *SelectBahamut}
 
   # 综合大包组
-  - {name: 国内视频, <<: *SelectDirect}
-  - {name: 国外媒体, <<: *SelectForeignMedia}
-  - {name: 国内直连, <<: *SelectDirect}
+  - {name: 📺 国内视频, <<: *SelectDirect}
+  - {name: 🎬 国外媒体, <<: *SelectForeignMedia}
+  - {name: 🈯 国内直连, <<: *SelectDirect}
 
   # ----- 地区组:手动选择该地区节点 -----
-  - {name: 香港节点, <<: *g_manual, filter: *FilterHK}
-  - {name: 台湾节点, <<: *g_manual, filter: *FilterTW}
-  - {name: 日本节点, <<: *g_manual, filter: *FilterJP}
-  - {name: 韩国节点, <<: *g_manual, filter: *FilterKR}
-  - {name: 美国节点, <<: *g_manual, filter: *FilterUS}
-  - {name: 狮城节点, <<: *g_manual, filter: *FilterSG}
+  - {name: 🇭🇰 香港节点, <<: *g_manual, filter: *FilterHK}
+  - {name: 🇹🇼 台湾节点, <<: *g_manual, filter: *FilterTW}
+  - {name: 🇯🇵 日本节点, <<: *g_manual, filter: *FilterJP}
+  - {name: 🇰🇷 韩国节点, <<: *g_manual, filter: *FilterKR}
+  - {name: 🇺🇸 美国节点, <<: *g_manual, filter: *FilterUS}
+  - {name: 🇸🇬 狮城节点, <<: *g_manual, filter: *FilterSG}
 
 # ---------- 规则集(镜像仓 + surge-ai-lists,与 Loon [Remote Rule] 同一批) ----------
 rule-providers:
@@ -201,98 +201,98 @@ rules:
   - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
 
   # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
-  - DOMAIN-SUFFIX,api.iplay.163.com,网易音乐
-  - DOMAIN-SUFFIX,mam.netease.com,网易音乐
-  - DOMAIN-SUFFIX,pgdt.gtimg.cn,腾讯视频
-  - DOMAIN-SUFFIX,71.am,爱奇艺
+  - DOMAIN-SUFFIX,api.iplay.163.com,🎵 网易音乐
+  - DOMAIN-SUFFIX,mam.netease.com,🎵 网易音乐
+  - DOMAIN-SUFFIX,pgdt.gtimg.cn,📺 腾讯视频
+  - DOMAIN-SUFFIX,71.am,📺 爱奇艺
   - DOMAIN-SUFFIX,4paradigm.com,DIRECT
-  - DOMAIN-SUFFIX,gvt2.com,油管视频
-  - DOMAIN-SUFFIX,ggpht.cn,油管视频
-  - DOMAIN-SUFFIX,cookielaw.org,奈飞视频
-  - DOMAIN-SUFFIX,onetrust.com,奈飞视频
+  - DOMAIN-SUFFIX,gvt2.com,🎬 油管视频
+  - DOMAIN-SUFFIX,ggpht.cn,🎬 油管视频
+  - DOMAIN-SUFFIX,cookielaw.org,🎬 奈飞视频
+  - DOMAIN-SUFFIX,onetrust.com,🎬 奈飞视频
 
   # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
-  - RULE-SET,advertising,广告拦截
-  - RULE-SET,hijacking,广告拦截
+  - RULE-SET,advertising,🛑 广告拦截
+  - RULE-SET,hijacking,🛑 广告拦截
 
   # ── 2. AI(国内直连最先压过海外表；海外细分各品牌独立策略组) ──
-  - RULE-SET,ai-cn,国内AI
-  - RULE-SET,ai-openai,OpenAI
-  - RULE-SET,ai-claude,Claude
-  - RULE-SET,ai-gemini,Gemini
-  - RULE-SET,ai-copilot,Copilot
-  - RULE-SET,ai-jetbrains,JetBrains
-  - RULE-SET,ai-others,AI平台
+  - RULE-SET,ai-cn,🤖 国内AI
+  - RULE-SET,ai-openai,🤖 OpenAI
+  - RULE-SET,ai-claude,💬 Claude
+  - RULE-SET,ai-gemini,✨ Gemini
+  - RULE-SET,ai-copilot,🐙 Copilot
+  - RULE-SET,ai-jetbrains,💻 JetBrains
+  - RULE-SET,ai-others,🚦 AI平台
 
   # ── 3. 特定应用与独立生态 ──
-  - RULE-SET,testflight,Testflight
-  - RULE-SET,apple,苹果服务
-  - RULE-SET,privatetracker,私有种子
-  - RULE-SET,telegram,电报消息
+  - RULE-SET,testflight,✈️ Testflight
+  - RULE-SET,apple,🍎 苹果服务
+  - RULE-SET,privatetracker,📥 私有种子
+  - RULE-SET,telegram,📲 电报消息
 
   # ── 国内垂直流媒体(必须排在 ChinaMedia 综合大包前) ──
-  - RULE-SET,netease-music,网易音乐
-  - RULE-SET,bilibili,哔哩哔哩
-  - RULE-SET,tencent-video,腾讯视频
-  - RULE-SET,iqiyi,爱奇艺
-  - RULE-SET,china-media,国内视频
+  - RULE-SET,netease-music,🎵 网易音乐
+  - RULE-SET,bilibili,📺 哔哩哔哩
+  - RULE-SET,tencent-video,📺 腾讯视频
+  - RULE-SET,iqiyi,📺 爱奇艺
+  - RULE-SET,china-media,📺 国内视频
 
   # ── 国外独立流媒体(必须排在 GlobalMedia 前) ──
-  - RULE-SET,youtube,油管视频
-  - RULE-SET,netflix,奈飞视频
-  - RULE-SET,bahamut,巴哈姆特
+  - RULE-SET,youtube,🎬 油管视频
+  - RULE-SET,netflix,🎬 奈飞视频
+  - RULE-SET,bahamut,🎬 巴哈姆特
 
   # ── Google 全家桶(YouTube 之后、GlobalMedia 之前) ──
-  - RULE-SET,google,谷歌服务
-  - RULE-SET,google-supplement,谷歌服务
+  - RULE-SET,google,🔎 谷歌服务
+  - RULE-SET,google-supplement,🔎 谷歌服务
 
   # ── 国外泛媒体兜底(Disney+/HBO/Hulu 等) ──
-  - RULE-SET,global-media,国外媒体
+  - RULE-SET,global-media,🎬 国外媒体
 
   # ── 4.5 微软服务直连（ChinaMax 大表缺 microsoft.com 主域,须显式引用;排在 AI 行之后不遮蔽 AI 分流） ──
-  - RULE-SET,microsoft,微软服务
+  - RULE-SET,microsoft,🪟 微软服务
 
   # ChinaMaxNoMedia 裸后缀截杀豁免(裸 DOMAIN-SUFFIX,ms / +.cn 会强制直连以下境外域)
-  - DOMAIN-SUFFIX,1drv.ms,微软服务
-  - DOMAIN-SUFFIX,aka.ms,微软服务
-  - DOMAIN-SUFFIX,appcenter.ms,微软服务
-  - DOMAIN-SUFFIX,aria.ms,微软服务
-  - DOMAIN-SUFFIX,ch9.ms,微软服务
-  - DOMAIN-SUFFIX,dictate.ms,微软服务
-  - DOMAIN-SUFFIX,google.ms,微软服务
-  - DOMAIN-SUFFIX,hummingbird.ms,微软服务
-  - DOMAIN-SUFFIX,jwt.ms,微软服务
-  - DOMAIN-SUFFIX,nico.ms,微软服务
-  - DOMAIN-SUFFIX,ntp.nat.ms,微软服务
-  - DOMAIN-SUFFIX,onestore.ms,微软服务
-  - DOMAIN-SUFFIX,rsg.ms,微软服务
-  - DOMAIN-SUFFIX,sm.ms,微软服务
-  - DOMAIN-SUFFIX,staffhub.ms,微软服务
-  - DOMAIN-SUFFIX,svc.ms,微软服务
-  - DOMAIN-SUFFIX,techhub.ms,微软服务
-  - DOMAIN-SUFFIX,visa.com.ms,微软服务
-  - DOMAIN-SUFFIX,wbd.ms,微软服务
-  - DOMAIN-SUFFIX,gfx.ms,微软服务
-  - DOMAIN-SUFFIX,nyti.ms,微软服务
-  - DOMAIN-SUFFIX,sfx.ms,微软服务
-  - DOMAIN-SUFFIX,futu.cn,全球代理
-  - DOMAIN-SUFFIX,futubull.cn,全球代理
-  - DOMAIN-SUFFIX,longbridge.cn,全球代理
-  - DOMAIN-SUFFIX,longportapp.cn,全球代理
-  - DOMAIN-SUFFIX,tigerbbs.cn,全球代理
-  - DOMAIN-SUFFIX,schwab.com.cn,全球代理
-  - DOMAIN-SUFFIX,skytigris.cn,全球代理
-  - DOMAIN-SUFFIX,jinrieluosi.cn,全球代理
-  - DOMAIN-SUFFIX,zhijianfengyi.cn,全球代理
+  - DOMAIN-SUFFIX,1drv.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,aka.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,appcenter.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,aria.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,ch9.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,dictate.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,google.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,hummingbird.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,jwt.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,nico.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,ntp.nat.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,onestore.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,rsg.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,sm.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,staffhub.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,svc.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,techhub.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,visa.com.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,wbd.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,gfx.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,nyti.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,sfx.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,futu.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,futubull.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,longbridge.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,longportapp.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,tigerbbs.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,schwab.com.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,skytigris.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,jinrieluosi.cn,🌍 全球代理
+  - DOMAIN-SUFFIX,zhijianfengyi.cn,🌍 全球代理
 
   # ── 兜底大列表:国内直连必须在全球代理之前! ──
-  - RULE-SET,chinamax-nomedia,国内直连
-  - RULE-SET,global,全球代理
+  - RULE-SET,chinamax-nomedia,🈯 国内直连
+  - RULE-SET,global,🌍 全球代理
 
   # GeoIP 兜底(与 Loon [Rule] 一致)
-  - GEOIP,KR,韩国节点
-  - GEOIP,TW,台湾节点
+  - GEOIP,KR,🇰🇷 韩国节点
+  - GEOIP,TW,🇹🇼 台湾节点
   - GEOIP,CN,DIRECT
 
   # 最终兜底
-  - MATCH,FINAL
+  - MATCH,🎯 FINAL
