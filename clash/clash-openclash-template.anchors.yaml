@@ -85,7 +85,10 @@ g_manual: &g_manual
 SelectFinal: &SelectFinal {type: select, proxies: [全球代理, 节点选择]}
 SelectMain: &SelectMain {type: select, proxies: [香港节点, 狮城节点, 美国节点, 韩国节点, 日本节点, 台湾节点], use: *airport-ref}
 SelectGlobal: &SelectGlobal {type: select, proxies: [节点选择, 美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 香港节点], use: *airport-ref}
+SelectAdBlock: &SelectAdBlock {type: select, proxies: [REJECT, DIRECT]}
 SelectAI: &SelectAI {type: select, proxies: [美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 香港节点, 节点选择]}
+SelectAIBrand: &SelectAIBrand {type: select, proxies: [美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点, 节点选择]}
+SelectJetBrains: &SelectJetBrains {type: select, proxies: [节点选择, 全球代理, 美国节点, 狮城节点, 日本节点, 韩国节点, 台湾节点]}
 SelectGoogle: &SelectGoogle {type: select, proxies: [美国节点, 狮城节点, 台湾节点, 香港节点, 日本节点]}
 SelectTelegram: &SelectTelegram {type: select, proxies: [香港节点, 狮城节点, 美国节点]}
 SelectForeignMedia: &SelectForeignMedia {type: select, proxies: [狮城节点, 香港节点, 台湾节点, 韩国节点, 美国节点]}
@@ -115,23 +118,39 @@ proxy-groups:
   - {name: 节点选择, <<: *SelectMain}
   - {name: 全球代理, <<: *SelectGlobal}
 
-  # 场景组(与 Loon 同名同序的候选地区)
+  # 基础控制与安全组
+  - {name: 广告拦截, <<: *SelectAdBlock}
+  - {name: 私有种子, <<: *SelectDirectNode}
+
+  # AI 专属服务组(各品牌独立分流)
+  - {name: 国内AI, <<: *SelectDirectNode}
+  - {name: OpenAI, <<: *SelectAIBrand}
+  - {name: Claude, <<: *SelectAIBrand}
+  - {name: Gemini, <<: *SelectAIBrand}
+  - {name: Copilot, <<: *SelectAIBrand}
+  - {name: JetBrains, <<: *SelectJetBrains}
   - {name: AI平台, <<: *SelectAI}
+
+  # 平台与应用生态组
+  - {name: Testflight, <<: *SelectDirectNode}
+  - {name: 苹果服务, <<: *SelectDirectNode}
+  - {name: 微软服务, <<: *SelectDirectNode}
   - {name: 谷歌服务, <<: *SelectGoogle}
   - {name: 电报消息, <<: *SelectTelegram}
-  - {name: 国外媒体, <<: *SelectForeignMedia}
-  - {name: 油管视频, <<: *SelectYouTube}
-  - {name: 奈飞视频, <<: *SelectNetflix}
-  - {name: 巴哈姆特, <<: *SelectBahamut}
+
+  # 垂直流媒体组
   - {name: 哔哩哔哩, <<: *SelectCNVideo}
   - {name: 爱奇艺, <<: *SelectCNVideo}
   - {name: 腾讯视频, <<: *SelectTencentVideo}
   - {name: 网易音乐, <<: *SelectDirect}
+  - {name: 油管视频, <<: *SelectYouTube}
+  - {name: 奈飞视频, <<: *SelectNetflix}
+  - {name: 巴哈姆特, <<: *SelectBahamut}
+
+  # 综合大包组
   - {name: 国内视频, <<: *SelectDirect}
+  - {name: 国外媒体, <<: *SelectForeignMedia}
   - {name: 国内直连, <<: *SelectDirect}
-  - {name: 微软服务, <<: *SelectDirectNode}
-  - {name: Testflight, <<: *SelectDirectNode}
-  - {name: 苹果服务, <<: *SelectDirectNode}
 
   # ----- 地区组:手动选择该地区节点 -----
   - {name: 香港节点, <<: *g_manual, filter: *FilterHK}
@@ -192,23 +211,23 @@ rules:
   - DOMAIN-SUFFIX,cookielaw.org,奈飞视频
   - DOMAIN-SUFFIX,onetrust.com,奈飞视频
 
-  # ── 1. 去广告(与 Loon 一号位相同,直接 REJECT) ──
-  - RULE-SET,advertising,REJECT
-  - RULE-SET,hijacking,REJECT
+  # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
+  - RULE-SET,advertising,广告拦截
+  - RULE-SET,hijacking,广告拦截
 
-  # ── 2. AI(国内直连最先压过海外表;海外全部汇入「AI平台」) ──
-  - RULE-SET,ai-cn,DIRECT
-  - RULE-SET,ai-openai,AI平台
-  - RULE-SET,ai-claude,AI平台
-  - RULE-SET,ai-gemini,AI平台
-  - RULE-SET,ai-copilot,AI平台
-  - RULE-SET,ai-jetbrains,AI平台
+  # ── 2. AI(国内直连最先压过海外表；海外细分各品牌独立策略组) ──
+  - RULE-SET,ai-cn,国内AI
+  - RULE-SET,ai-openai,OpenAI
+  - RULE-SET,ai-claude,Claude
+  - RULE-SET,ai-gemini,Gemini
+  - RULE-SET,ai-copilot,Copilot
+  - RULE-SET,ai-jetbrains,JetBrains
   - RULE-SET,ai-others,AI平台
 
   # ── 3. 特定应用与独立生态 ──
   - RULE-SET,testflight,Testflight
   - RULE-SET,apple,苹果服务
-  - RULE-SET,privatetracker,国内直连
+  - RULE-SET,privatetracker,私有种子
   - RULE-SET,telegram,电报消息
 
   # ── 国内垂直流媒体(必须排在 ChinaMedia 综合大包前) ──

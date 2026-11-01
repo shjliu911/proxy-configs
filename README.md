@@ -13,7 +13,13 @@
 | `[Remote Rule]` 分流顺序 | `[Rule]` RULE-SET 同序 | `[filter_remote]` 同序 | `rule-providers` + `rules` 同序 |
 | FINAL / 节点选择 / 全球代理 | 同名 | 🚀 节点选择 / 🌍 全球代理 | 同名 |
 
-分流顺序（四个模板一致）：**去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体 → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia → 微软服务直连（Microsoft.list）→ ChinaMaxNoMedia 直连 → Global 走代理**。
+分流顺序（四个模板一致）：**广告拦截 → 国内AI → 海外AI分品牌（OpenAI / Claude / Gemini / Copilot / JetBrains / AI平台） → TestFlight / 苹果 / 私有种子(PT) / 电报 → 国内垂直流媒体 → ChinaMedia → YouTube / Netflix / 巴哈 → Google → GlobalMedia → 微软服务直连（Microsoft.list）→ ChinaMaxNoMedia 直连 → Global 走代理**。
+
+2026-11-01 策略组解耦优化：
+- **规则与策略组 1:1 独立解耦**：每个规则/规则集均拥有专属策略组，杜绝规则硬编码与大池混跑。
+  - **广告拦截**：广告与劫持规则指向独立的「广告拦截」策略组（默认 REJECT，遇误杀可一键切 DIRECT 应急）。
+  - **AI 细分独立策略组**：国内 AI 指向「国内AI」（默认 DIRECT 可切节点）；海外 AI 全面细分为「OpenAI」、「Claude」、「Gemini」、「Copilot」、「JetBrains」与「AI平台」（兜底其它海外 AI），便于针对封锁 IP 严格的平台（如 Claude/OpenAI）单独指定干净节点。
+  - **私有种子 (PT)**：从大内网/国内直连中剥离出「私有种子」专属策略组（默认 DIRECT，可指定下载节点或直连防死）。
 
 2026-10-30 分流审计（4 模板 × 逐域名命中探测 + 对抗验证）后加入的修正：
 

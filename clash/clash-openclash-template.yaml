@@ -99,7 +99,77 @@ proxy-groups:
     use:
       - airport
 
-  # 场景组(与 Loon 同名同序的候选地区)
+  # 基础控制与安全组
+  - name: 广告拦截
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+
+  - name: 私有种子
+    type: select
+    proxies:
+      - DIRECT
+      - 节点选择
+
+  # AI 专属服务组(各品牌独立分流)
+  - name: 国内AI
+    type: select
+    proxies:
+      - DIRECT
+      - 节点选择
+
+  - name: OpenAI
+    type: select
+    proxies:
+      - 美国节点
+      - 狮城节点
+      - 日本节点
+      - 韩国节点
+      - 台湾节点
+      - 节点选择
+
+  - name: Claude
+    type: select
+    proxies:
+      - 美国节点
+      - 狮城节点
+      - 日本节点
+      - 韩国节点
+      - 台湾节点
+      - 节点选择
+
+  - name: Gemini
+    type: select
+    proxies:
+      - 美国节点
+      - 狮城节点
+      - 日本节点
+      - 韩国节点
+      - 台湾节点
+      - 节点选择
+
+  - name: Copilot
+    type: select
+    proxies:
+      - 美国节点
+      - 狮城节点
+      - 日本节点
+      - 韩国节点
+      - 台湾节点
+      - 节点选择
+
+  - name: JetBrains
+    type: select
+    proxies:
+      - 节点选择
+      - 全球代理
+      - 美国节点
+      - 狮城节点
+      - 日本节点
+      - 韩国节点
+      - 台湾节点
+
   - name: AI平台
     type: select
     proxies:
@@ -479,23 +549,23 @@ rules:
   - DOMAIN-SUFFIX,cookielaw.org,奈飞视频
   - DOMAIN-SUFFIX,onetrust.com,奈飞视频
 
-  # ── 1. 去广告(与 Loon 一号位相同,直接 REJECT) ──
-  - RULE-SET,advertising,REJECT
-  - RULE-SET,hijacking,REJECT
+  # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
+  - RULE-SET,advertising,广告拦截
+  - RULE-SET,hijacking,广告拦截
 
-  # ── 2. AI(国内直连最先压过海外表;海外全部汇入「AI平台」) ──
-  - RULE-SET,ai-cn,DIRECT
-  - RULE-SET,ai-openai,AI平台
-  - RULE-SET,ai-claude,AI平台
-  - RULE-SET,ai-gemini,AI平台
-  - RULE-SET,ai-copilot,AI平台
-  - RULE-SET,ai-jetbrains,AI平台
+  # ── 2. AI(国内直连最先压过海外表；海外细分各品牌独立策略组) ──
+  - RULE-SET,ai-cn,国内AI
+  - RULE-SET,ai-openai,OpenAI
+  - RULE-SET,ai-claude,Claude
+  - RULE-SET,ai-gemini,Gemini
+  - RULE-SET,ai-copilot,Copilot
+  - RULE-SET,ai-jetbrains,JetBrains
   - RULE-SET,ai-others,AI平台
 
   # ── 3. 特定应用与独立生态 ──
   - RULE-SET,testflight,Testflight
   - RULE-SET,apple,苹果服务
-  - RULE-SET,privatetracker,国内直连
+  - RULE-SET,privatetracker,私有种子
   - RULE-SET,telegram,电报消息
 
   # ── 国内垂直流媒体(必须排在 ChinaMedia 综合大包前) ──
