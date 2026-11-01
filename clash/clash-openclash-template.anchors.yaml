@@ -1,0 +1,566 @@
+# Clash / OpenClash 配置模板(与 loon/loon-template.conf 同构,本仓库以 Loon 为基准)
+#
+# 适用:mihomo/Clash Meta 内核 —— OpenClash(OpenWrt)、Clash Verge Rev 等
+# 策略组命名、地区正则、分流顺序全部对齐 Loon 基准模板:
+#   Loon [Proxy Group] 场景组   → 本文件 proxy-groups 同名组
+#   Loon [Remote Filter] 正则   → 本文件 地区组 filter 同一套正则(url-test 自动选优)
+#   Loon [Remote Rule] 分流顺序 → 本文件 rule-providers + rules 同序引用(同一批镜像仓规则)
+#
+# 使用方法:
+#   1. proxy-providers 的 url 换成你的机场订阅(支持 v2ray/clash 格式)
+#   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
+#   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
+#      (2026-10-30 审计补丁:微软服务直连表、.ms/.cn 裸后缀豁免、广告表误杀 9 条豁免)
+#      去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体
+#      → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia
+#      → ChinaMaxNoMedia 直连 → Global 走全球代理
+
+mode: rule
+log-level: warning
+ipv6: false
+allow-lan: false
+external-controller: 127.0.0.1:9090   # OpenWrt 上按需改 0.0.0.0:9090
+
+# ---------- DNS(fake-ip 模式,Meta 内核;real-ip 白名单与 Loon 一致) ----------
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - '*.lan'
+    - '*.local'
+    - '*.msftconnecttest.com'
+    - '*.msftncsi.com'
+    - '+.srv.nintendo.net'
+    - '+.stun.playstation.net'
+    - 'xbox.*.microsoft.com'
+    - '+.xboxlive.com'
+    - '+.battlenet.com.cn'
+    - '+.battlenet.com'
+    - '+.blzstatic.cn'
+    - '+.battle.net'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.1.1.1/dns-query
+    - https://dns.google/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+
+# ---------- 机场订阅(替换成你自己的) ----------
+proxy-providers:
+  airport:
+    type: http
+    url: "https://YOUR-AIRPORT-SUBSCRIPTION-URL/path"
+    interval: 86400
+    path: ./providers/airport.yaml
+    health-check: &health-check-common
+      enable: true
+      url: http://cp.cloudflare.com/generate_204
+      interval: 300
+
+# ---------- 锚点定义:复用地区候选、provider 与公共配置 ----------
+# YAML 锚点在加载时展开;mihomo/Clash Meta 兼容该写法。
+# &regions 和 &airport-ref 只是供内部引用;不会输出成多余字段。
+
+# 场景组候选地区(按用途分别定义,避免和主入口候选混用)
+_regions:
+  main_regions: &regions
+    - 香港节点
+    - 狮城节点
+    - 美国节点
+    - 韩国节点
+    - 日本节点
+    - 台湾节点
+  ai_regions: &ai-regions
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 韩国节点
+    - 台湾节点
+    - 香港节点
+  global_select: &global-select-regions
+    - 节点选择
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 韩国节点
+    - 台湾节点
+    - 香港节点
+  ai_select: &ai-select-regions
+    - 美国节点
+    - 狮城节点
+    - 日本节点
+    - 韩国节点
+    - 台湾节点
+    - 香港节点
+    - 节点选择
+  google_regions: &google-regions
+    - 美国节点
+    - 狮城节点
+    - 台湾节点
+    - 香港节点
+    - 日本节点
+  telegram_regions: &telegram-regions
+    - 香港节点
+    - 狮城节点
+    - 美国节点
+  media_regions: &media-regions
+    - 狮城节点
+    - 香港节点
+    - 台湾节点
+    - 韩国节点
+    - 美国节点
+  youtube_regions: &youtube-regions
+    - 香港节点
+    - 狮城节点
+    - 韩国节点
+    - 美国节点
+  netflix_regions: &netflix-regions
+    - 狮城节点
+    - 香港节点
+    - 台湾节点
+    - 美国节点
+  cn_video_regions: &cn-video-regions
+    - 国内视频
+    - 台湾节点
+    - 香港节点
+
+# provider 和地区组公共参数
+_providers:
+  airport: &airport-ref
+    - airport
+  url_test_common: &url-test-common
+    use: *airport-ref
+    url: http://cp.cloudflare.com/generate_204
+    interval: 300
+    tolerance: 50
+  direct_or_node: &direct-or-node
+    - DIRECT
+    - 节点选择
+  direct_only: &direct-only
+    - DIRECT
+
+# ---------- 策略组(命名与 Loon [Proxy Group] 一致) ----------
+proxy-groups:
+  # 主入口
+  - name: FINAL
+    type: select
+    proxies:
+      - 全球代理
+      - 节点选择
+
+  - name: 节点选择
+    type: select
+    proxies: *regions
+    use: *airport-ref
+
+  - name: 全球代理
+    type: select
+    proxies: *global-select-regions
+    use: *airport-ref
+
+  # 场景组(与 Loon 同名同序的候选地区)
+  - name: AI平台
+    type: select
+    proxies: *ai-select-regions
+
+  - name: 谷歌服务
+    type: select
+    proxies: *google-regions
+
+  - name: 电报消息
+    type: select
+    proxies: *telegram-regions
+
+  - name: 国外媒体
+    type: select
+    proxies: *media-regions
+
+  - name: 油管视频
+    type: select
+    proxies: *youtube-regions
+
+  - name: 奈飞视频
+    type: select
+    proxies: *netflix-regions
+
+  - name: 巴哈姆特
+    type: select
+    proxies:
+      - 台湾节点
+
+  - name: 哔哩哔哩
+    type: select
+    proxies: *cn-video-regions
+
+  - name: 爱奇艺
+    type: select
+    proxies: *cn-video-regions
+
+  - name: 腾讯视频
+    type: select
+    proxies:
+      - 国内视频
+      - 香港节点
+      - 台湾节点
+
+  - name: 网易音乐
+    type: select
+    proxies: *direct-only
+
+  - name: 国内视频
+    type: select
+    proxies: *direct-only
+
+  - name: 国内直连
+    type: select
+    proxies: *direct-only
+
+  - name: 微软服务
+    type: select
+    proxies: *direct-or-node
+
+  - name: Testflight
+    type: select
+    proxies: *direct-or-node
+
+  - name: 苹果服务
+    type: select
+    proxies: *direct-or-node
+
+  # ----- 地区组:url-test 自动选优,filter 正则 = Loon [Remote Filter] 同一套 -----
+  - name: 香港节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(港|HK|Hong)"
+
+  - name: 台湾节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(台|TW|Tai)"
+
+  - name: 日本节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|JP|Japan)"
+
+  - name: 韩国节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(KR|Korea|KOR|首尔|韩|韓)"
+
+  - name: 美国节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States)"
+
+  - name: 狮城节点
+    <<: *url-test-common
+    type: url-test
+    filter: "(?i)(新加坡|坡|狮城|SG|Singapore)"
+
+# ---------- 规则集(镜像仓 + surge-ai-lists,与 Loon [Remote Rule] 同一批) ----------
+rule-providers:
+  advertising:
+    type: http
+    behavior: domain
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Advertising/Advertising_Domain.yaml"
+    path: ./rules/advertising.yaml
+    interval: 86400
+  hijacking:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Hijacking/Hijacking.yaml"
+    path: ./rules/hijacking.yaml
+    interval: 86400
+  ai-cn:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-CN.yaml"
+    path: ./rules/ai-cn.yaml
+    interval: 86400
+  ai-openai:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-OpenAI.yaml"
+    path: ./rules/ai-openai.yaml
+    interval: 86400
+  ai-claude:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-Claude.yaml"
+    path: ./rules/ai-claude.yaml
+    interval: 86400
+  ai-gemini:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-Gemini.yaml"
+    path: ./rules/ai-gemini.yaml
+    interval: 86400
+  ai-copilot:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-Copilot.yaml"
+    path: ./rules/ai-copilot.yaml
+    interval: 86400
+  ai-jetbrains:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-Jetbrains.yaml"
+    path: ./rules/ai-jetbrains.yaml
+    interval: 86400
+  ai-others:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-Overseas-Others.yaml"
+    path: ./rules/ai-others.yaml
+    interval: 86400
+  testflight:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/TestFlight/TestFlight.yaml"
+    path: ./rules/testflight.yaml
+    interval: 86400
+  apple:
+    type: http
+    behavior: domain
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Apple/Apple_Domain.yaml"
+    path: ./rules/apple.yaml
+    interval: 86400
+  privatetracker:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/PrivateTracker/PrivateTracker.yaml"
+    path: ./rules/privatetracker.yaml
+    interval: 86400
+  telegram:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Telegram/Telegram.yaml"
+    path: ./rules/telegram.yaml
+    interval: 86400
+  netease-music:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/NetEaseMusic/NetEaseMusic.yaml"
+    path: ./rules/netease-music.yaml
+    interval: 86400
+  bilibili:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/BiliBili/BiliBili.yaml"
+    path: ./rules/bilibili.yaml
+    interval: 86400
+  tencent-video:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/TencentVideo/TencentVideo.yaml"
+    path: ./rules/tencent-video.yaml
+    interval: 86400
+  iqiyi:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/iQIYI/iQIYI.yaml"
+    path: ./rules/iqiyi.yaml
+    interval: 86400
+  china-media:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/ChinaMedia/ChinaMedia.yaml"
+    path: ./rules/china-media.yaml
+    interval: 86400
+  youtube:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/YouTube/YouTube.yaml"
+    path: ./rules/youtube.yaml
+    interval: 86400
+  netflix:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Netflix/Netflix.yaml"
+    path: ./rules/netflix.yaml
+    interval: 86400
+  bahamut:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Bahamut/Bahamut.yaml"
+    path: ./rules/bahamut.yaml
+    interval: 86400
+  google:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Google/Google.yaml"
+    path: ./rules/google.yaml
+    interval: 86400
+  google-supplement:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/Google-Supplement.yaml"
+    path: ./rules/google-supplement.yaml
+    interval: 86400
+  global-media:
+    type: http
+    behavior: domain
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/GlobalMedia/GlobalMedia_Domain.yaml"
+    path: ./rules/global-media.yaml
+    interval: 86400
+  microsoft:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Microsoft/Microsoft.yaml"
+    path: ./rules/microsoft.yaml
+    interval: 86400
+  chinamax-nomedia:
+    type: http
+    behavior: domain
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/ChinaMaxNoMedia/ChinaMaxNoMedia_Domain.yaml"
+    path: ./rules/chinamax-nomedia.yaml
+    interval: 86400
+  global:
+    type: http
+    behavior: domain
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Global/Global_Domain.yaml"
+    path: ./rules/global.yaml
+    interval: 86400
+
+# ---------- 分流规则(顺序 = Loon [Remote Rule] 一一对应) ----------
+rules:
+  # 本地自定义(与 Loon [Rule] 对应,特例按需增删)
+  - DOMAIN-SUFFIX,zwift.com,DIRECT
+  - DOMAIN-SUFFIX,pool.ntp.org,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+
+  # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
+  - DOMAIN-SUFFIX,api.iplay.163.com,网易音乐
+  - DOMAIN-SUFFIX,mam.netease.com,网易音乐
+  - DOMAIN-SUFFIX,pgdt.gtimg.cn,腾讯视频
+  - DOMAIN-SUFFIX,71.am,爱奇艺
+  - DOMAIN-SUFFIX,4paradigm.com,DIRECT
+  - DOMAIN-SUFFIX,gvt2.com,油管视频
+  - DOMAIN-SUFFIX,ggpht.cn,油管视频
+  - DOMAIN-SUFFIX,cookielaw.org,奈飞视频
+  - DOMAIN-SUFFIX,onetrust.com,奈飞视频
+
+  # ── 1. 去广告(与 Loon 一号位相同,直接 REJECT) ──
+  - RULE-SET,advertising,REJECT
+  - RULE-SET,hijacking,REJECT
+
+  # ── 2. AI(国内直连最先压过海外表;海外全部汇入「AI平台」) ──
+  - RULE-SET,ai-cn,DIRECT
+  - RULE-SET,ai-openai,AI平台
+  - RULE-SET,ai-claude,AI平台
+  - RULE-SET,ai-gemini,AI平台
+  - RULE-SET,ai-copilot,AI平台
+  - RULE-SET,ai-jetbrains,AI平台
+  - RULE-SET,ai-others,AI平台
+
+  # ── 3. 特定应用与独立生态 ──
+  - RULE-SET,testflight,Testflight
+  - RULE-SET,apple,苹果服务
+  - RULE-SET,privatetracker,国内直连
+  - RULE-SET,telegram,电报消息
+
+  # ── 国内垂直流媒体(必须排在 ChinaMedia 综合大包前) ──
+  - RULE-SET,netease-music,网易音乐
+  - RULE-SET,bilibili,哔哩哔哩
+  - RULE-SET,tencent-video,腾讯视频
+  - RULE-SET,iqiyi,爱奇艺
+  - RULE-SET,china-media,国内视频
+
+  # ── 国外独立流媒体(必须排在 GlobalMedia 前) ──
+  - RULE-SET,youtube,油管视频
+  - RULE-SET,netflix,奈飞视频
+  - RULE-SET,bahamut,巴哈姆特
+
+  # ── Google 全家桶(YouTube 之后、GlobalMedia 之前) ──
+  - RULE-SET,google,谷歌服务
+  - RULE-SET,google-supplement,谷歌服务
+
+  # ── 国外泛媒体兜底(Disney+/HBO/Hulu 等) ──
+  - RULE-SET,global-media,国外媒体
+
+  # ── 4.5 微软服务直连（ChinaMax 大表缺 microsoft.com 主域,须显式引用;排在 AI 行之后不遮蔽 AI 分流） ──
+  - RULE-SET,microsoft,微软服务
+
+  # ChinaMaxNoMedia 裸后缀截杀豁免(裸 DOMAIN-SUFFIX,ms / +.cn 会强制直连以下境外域)
+  - DOMAIN-SUFFIX,1drv.ms,微软服务
+  - DOMAIN-SUFFIX,aka.ms,微软服务
+  - DOMAIN-SUFFIX,appcenter.ms,微软服务
+  - DOMAIN-SUFFIX,aria.ms,微软服务
+  - DOMAIN-SUFFIX,ch9.ms,微软服务
+  - DOMAIN-SUFFIX,dictate.ms,微软服务
+  - DOMAIN-SUFFIX,google.ms,微软服务
+  - DOMAIN-SUFFIX,hummingbird.ms,微软服务
+  - DOMAIN-SUFFIX,jwt.ms,微软服务
+  - DOMAIN-SUFFIX,nico.ms,微软服务
+  - DOMAIN-SUFFIX,ntp.nat.ms,微软服务
+  - DOMAIN-SUFFIX,onestore.ms,微软服务
+  - DOMAIN-SUFFIX,rsg.ms,微软服务
+  - DOMAIN-SUFFIX,sm.ms,微软服务
+  - DOMAIN-SUFFIX,staffhub.ms,微软服务
+  - DOMAIN-SUFFIX,svc.ms,微软服务
+  - DOMAIN-SUFFIX,techhub.ms,微软服务
+  - DOMAIN-SUFFIX,visa.com.ms,微软服务
+  - DOMAIN-SUFFIX,wbd.ms,微软服务
+  - DOMAIN-SUFFIX,gfx.ms,微软服务
+  - DOMAIN-SUFFIX,nyti.ms,微软服务
+  - DOMAIN-SUFFIX,sfx.ms,微软服务
+  - DOMAIN-SUFFIX,futu.cn,全球代理
+  - DOMAIN-SUFFIX,futubull.cn,全球代理
+  - DOMAIN-SUFFIX,longbridge.cn,全球代理
+  - DOMAIN-SUFFIX,longportapp.cn,全球代理
+  - DOMAIN-SUFFIX,tigerbbs.cn,全球代理
+  - DOMAIN-SUFFIX,schwab.com.cn,全球代理
+  - DOMAIN-SUFFIX,skytigris.cn,全球代理
+  - DOMAIN-SUFFIX,jinrieluosi.cn,全球代理
+  - DOMAIN-SUFFIX,zhijianfengyi.cn,全球代理
+
+  # ── 兜底大列表:国内直连必须在全球代理之前! ──
+  - RULE-SET,chinamax-nomedia,国内直连
+  - RULE-SET,global,全球代理
+
+  # GeoIP 兜底(与 Loon [Rule] 一致)
+  - GEOIP,KR,韩国节点
+  - GEOIP,TW,台湾节点
+  - GEOIP,CN,DIRECT
+
+  # 最终兜底
+  - MATCH,FINAL
