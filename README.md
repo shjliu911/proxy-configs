@@ -8,18 +8,19 @@
 
 | Loon 结构 | Surge | Quantumult X | Clash (mihomo) |
 | --- | --- | --- | --- |
-| `[Proxy Group]` 场景组（🤖 OpenAI / 🎬 油管视频 / 🪟 微软服务…） | `[Proxy Group]` 同名组 | `[policy]` 同名 static 组 | `proxy-groups` 同名组 |
+| `[Proxy Group]` 场景组（🤖 OpenAI / ▶️ 油管视频 / 🪟 微软服务…） | `[Proxy Group]` 同名组 | `[policy]` 同名 static 组 | `proxy-groups` 同名组 |
 | `[Remote Filter]` 六地区正则 | 地区组 `policy-regex-filter` | `server-tag-regex` | 地区组 `filter`（手动/url-test） |
 | `[Remote Rule]` 分流顺序 | `[Rule]` RULE-SET 同序 | `[filter_remote]` 同序 | `rule-providers` + `rules` 同序 |
 | 🎯 FINAL / 🚀 节点选择 / 🌍 全球代理 | 同名 | 同名 | 同名 |
 
-分流顺序（四个模板一致）：**🛑 广告拦截 → 🤖 国内AI → 海外AI分品牌（🤖 OpenAI / 💬 Claude / ✨ Gemini / 🐙 Copilot / 💻 JetBrains / 🚦 AI平台） → ✈️ Testflight / 🍎 苹果服务 / 📥 私有种子 / 📲 电报消息 → 国内垂直流媒体（📺 哔哩哔哩 / 📺 爱奇艺 / 📺 腾讯视频 / 🎵 网易音乐） → 📺 国内视频 → 🎬 油管视频 / 🎬 奈飞视频 / 🎬 巴哈姆特 → 🔎 谷歌服务 → 🎬 国外媒体 → 🪟 微软服务（Microsoft.list）→ 🈯 国内直连 → 🌍 全球代理**。
+分流顺序（四个模板一致）：**🛑 广告拦截 → 🧠 国内AI → 海外AI分品牌（🤖 OpenAI / 💬 Claude / ✨ Gemini / 🐙 Copilot / 💻 JetBrains / 🚦 AI平台） → ✈️ Testflight / 🍎 苹果服务 / 📥 私有种子 / 📲 电报消息 → 国内垂直流媒体（📺 哔哩哔哩 / 🥝 爱奇艺 / 🐧 腾讯视频 / 🍿 优酷视频 / 🎵 网易音乐） → 🎞️ 国内视频 → ▶️ 油管视频 / 🎥 奈飞视频 / 🐉 巴哈姆特 → 🔎 谷歌服务 → 🎬 国外媒体 → 🪟 微软服务（Microsoft.list）→ 🈯 国内直连 → 🌍 全球代理**。
 
-2026-11-01 策略组解耦与 Emoji 视觉升级：
-- **策略组全量 Emoji 与地区国旗统一**：所有策略组统一增加 Emoji（地区节点匹配 🇭🇰 🇹🇼 🇸🇬 🇰🇷 🇯🇵 🇺🇸，AI 与媒体服务匹配专属图标），跨平台名字 100% 对齐。
+2026-11-01 策略组解耦、去重 Emoji 与国内流媒体扩充：
+- **全量 Emoji 绝对去重**：全面重构所有策略组前置 Emoji，消除重复图标，一对一鲜明表意（B站小电视 📺、爱奇艺奇异果 🥝、腾讯企鹅 🐧、优酷爆米花 🍿、网易音乐 🎵、国内视频胶卷 🎞️、油管播放 ▶️、奈飞放映 🎥、巴哈之龙 🐉、OpenAI机器人 🤖、国内AI大脑 🧠、Claude气泡 💬、Gemini双子星 ✨ 等）。
+- **新增优酷独立分流**：国内主流视频加入「🍿 优酷视频」专属策略组与规则集，补齐爱优腾B四大家。
 - **规则与策略组 1:1 独立解耦**：每个规则/规则集均拥有专属策略组，杜绝规则硬编码与大池混跑。
   - **🛑 广告拦截**：广告与劫持规则指向独立的「🛑 广告拦截」策略组（默认 REJECT，遇误杀可一键切 DIRECT 应急）。
-  - **AI 细分独立策略组**：国内 AI 指向「🤖 国内AI」（默认 DIRECT 可切节点）；海外 AI 全面细分为「🤖 OpenAI」、「💬 Claude」、「✨ Gemini」、「🐙 Copilot」、「💻 JetBrains」与「🚦 AI平台」（兜底其它海外 AI），便于针对封锁 IP 严格的平台（如 Claude/OpenAI）单独指定干净节点。
+  - **AI 细分独立策略组**：国内 AI 指向「🧠 国内AI」（默认 DIRECT 可切节点）；海外 AI 全面细分为「🤖 OpenAI」、「💬 Claude」、「✨ Gemini」、「🐙 Copilot」、「💻 JetBrains」与「🚦 AI平台」（兜底其它海外 AI）。
   - **📥 私有种子 (PT)**：从大内网/国内直连中剥离出「📥 私有种子」专属策略组（默认 DIRECT，可指定下载节点或直连防死）。
 
 2026-10-30 分流审计（4 模板 × 逐域名命中探测 + 对抗验证）后加入的修正：

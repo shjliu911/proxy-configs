@@ -95,8 +95,8 @@ SelectForeignMedia: &SelectForeignMedia {type: select, proxies: [🇸🇬 狮城
 SelectYouTube: &SelectYouTube {type: select, proxies: [🇭🇰 香港节点, 🇸🇬 狮城节点, 🇰🇷 韩国节点, 🇺🇸 美国节点]}
 SelectNetflix: &SelectNetflix {type: select, proxies: [🇸🇬 狮城节点, 🇭🇰 香港节点, 🇹🇼 台湾节点, 🇺🇸 美国节点]}
 SelectBahamut: &SelectBahamut {type: select, proxies: [🇹🇼 台湾节点]}
-SelectCNVideo: &SelectCNVideo {type: select, proxies: [📺 国内视频, 🇹🇼 台湾节点, 🇭🇰 香港节点]}
-SelectTencentVideo: &SelectTencentVideo {type: select, proxies: [📺 国内视频, 🇭🇰 香港节点, 🇹🇼 台湾节点]}
+SelectCNVideo: &SelectCNVideo {type: select, proxies: [🎞️ 国内视频, 🇹🇼 台湾节点, 🇭🇰 香港节点]}
+SelectTencentVideo: &SelectTencentVideo {type: select, proxies: [🎞️ 国内视频, 🇭🇰 香港节点, 🇹🇼 台湾节点]}
 SelectDirect: &SelectDirect {type: select, proxies: [DIRECT]}
 SelectDirectNode: &SelectDirectNode {type: select, proxies: [DIRECT, 🚀 节点选择]}
 
@@ -123,7 +123,7 @@ proxy-groups:
   - {name: 📥 私有种子, <<: *SelectDirectNode}
 
   # AI 专属服务组(各品牌独立分流)
-  - {name: 🤖 国内AI, <<: *SelectDirectNode}
+  - {name: 🧠 国内AI, <<: *SelectDirectNode}
   - {name: 🤖 OpenAI, <<: *SelectAIBrand}
   - {name: 💬 Claude, <<: *SelectAIBrand}
   - {name: ✨ Gemini, <<: *SelectAIBrand}
@@ -140,15 +140,16 @@ proxy-groups:
 
   # 垂直流媒体组
   - {name: 📺 哔哩哔哩, <<: *SelectCNVideo}
-  - {name: 📺 爱奇艺, <<: *SelectCNVideo}
-  - {name: 📺 腾讯视频, <<: *SelectTencentVideo}
+  - {name: 🥝 爱奇艺, <<: *SelectCNVideo}
+  - {name: 🐧 腾讯视频, <<: *SelectTencentVideo}
+  - {name: 🍿 优酷视频, <<: *SelectTencentVideo}
   - {name: 🎵 网易音乐, <<: *SelectDirect}
-  - {name: 🎬 油管视频, <<: *SelectYouTube}
-  - {name: 🎬 奈飞视频, <<: *SelectNetflix}
-  - {name: 🎬 巴哈姆特, <<: *SelectBahamut}
+  - {name: ▶️ 油管视频, <<: *SelectYouTube}
+  - {name: 🎥 奈飞视频, <<: *SelectNetflix}
+  - {name: 🐉 巴哈姆特, <<: *SelectBahamut}
 
   # 综合大包组
-  - {name: 📺 国内视频, <<: *SelectDirect}
+  - {name: 🎞️ 国内视频, <<: *SelectDirect}
   - {name: 🎬 国外媒体, <<: *SelectForeignMedia}
   - {name: 🈯 国内直连, <<: *SelectDirect}
 
@@ -178,6 +179,7 @@ rule-providers:
   netease-music: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/NetEaseMusic/NetEaseMusic.yaml", path: "./rules/netease-music.yaml"}
   bilibili: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/BiliBili/BiliBili.yaml", path: "./rules/bilibili.yaml"}
   tencent-video: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/TencentVideo/TencentVideo.yaml", path: "./rules/tencent-video.yaml"}
+  youku: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Youku/Youku.yaml", path: "./rules/youku.yaml"}
   iqiyi: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/iQIYI/iQIYI.yaml", path: "./rules/iqiyi.yaml"}
   china-media: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/ChinaMedia/ChinaMedia.yaml", path: "./rules/china-media.yaml"}
   youtube: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/YouTube/YouTube.yaml", path: "./rules/youtube.yaml"}
@@ -203,20 +205,20 @@ rules:
   # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
   - DOMAIN-SUFFIX,api.iplay.163.com,🎵 网易音乐
   - DOMAIN-SUFFIX,mam.netease.com,🎵 网易音乐
-  - DOMAIN-SUFFIX,pgdt.gtimg.cn,📺 腾讯视频
-  - DOMAIN-SUFFIX,71.am,📺 爱奇艺
+  - DOMAIN-SUFFIX,pgdt.gtimg.cn,🐧 腾讯视频
+  - DOMAIN-SUFFIX,71.am,🥝 爱奇艺
   - DOMAIN-SUFFIX,4paradigm.com,DIRECT
-  - DOMAIN-SUFFIX,gvt2.com,🎬 油管视频
-  - DOMAIN-SUFFIX,ggpht.cn,🎬 油管视频
-  - DOMAIN-SUFFIX,cookielaw.org,🎬 奈飞视频
-  - DOMAIN-SUFFIX,onetrust.com,🎬 奈飞视频
+  - DOMAIN-SUFFIX,gvt2.com,▶️ 油管视频
+  - DOMAIN-SUFFIX,ggpht.cn,▶️ 油管视频
+  - DOMAIN-SUFFIX,cookielaw.org,🎥 奈飞视频
+  - DOMAIN-SUFFIX,onetrust.com,🎥 奈飞视频
 
   # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
   - RULE-SET,advertising,🛑 广告拦截
   - RULE-SET,hijacking,🛑 广告拦截
 
   # ── 2. AI(国内直连最先压过海外表；海外细分各品牌独立策略组) ──
-  - RULE-SET,ai-cn,🤖 国内AI
+  - RULE-SET,ai-cn,🧠 国内AI
   - RULE-SET,ai-openai,🤖 OpenAI
   - RULE-SET,ai-claude,💬 Claude
   - RULE-SET,ai-gemini,✨ Gemini
@@ -233,14 +235,15 @@ rules:
   # ── 国内垂直流媒体(必须排在 ChinaMedia 综合大包前) ──
   - RULE-SET,netease-music,🎵 网易音乐
   - RULE-SET,bilibili,📺 哔哩哔哩
-  - RULE-SET,tencent-video,📺 腾讯视频
-  - RULE-SET,iqiyi,📺 爱奇艺
-  - RULE-SET,china-media,📺 国内视频
+  - RULE-SET,tencent-video,🐧 腾讯视频
+  - RULE-SET,youku,🍿 优酷视频
+  - RULE-SET,iqiyi,🥝 爱奇艺
+  - RULE-SET,china-media,🎞️ 国内视频
 
   # ── 国外独立流媒体(必须排在 GlobalMedia 前) ──
-  - RULE-SET,youtube,🎬 油管视频
-  - RULE-SET,netflix,🎬 奈飞视频
-  - RULE-SET,bahamut,🎬 巴哈姆特
+  - RULE-SET,youtube,▶️ 油管视频
+  - RULE-SET,netflix,🎥 奈飞视频
+  - RULE-SET,bahamut,🐉 巴哈姆特
 
   # ── Google 全家桶(YouTube 之后、GlobalMedia 之前) ──
   - RULE-SET,google,🔎 谷歌服务
