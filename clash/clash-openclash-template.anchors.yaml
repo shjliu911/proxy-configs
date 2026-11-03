@@ -10,6 +10,8 @@
 #   1. proxy-providers 的 url 换成你的机场订阅(支持 v2ray/clash 格式)
 #   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
 #   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
+# 2026-11-03 修复审计:google.ms/nico.ms/ntp.nat.ms/rsg.ms/sm.ms/visa.com.ms/nyti.ms 7 个非微软域豁免改指 全球代理
+#      (原指 微软服务[DIRECT 默认],与豁免目的矛盾);美国组 filter 正则加词边界(RUS/AUS 不再误入);修正过时行号 3155→3177。
 #      (2026-10-30 审计补丁:微软服务直连表、.ms/.cn 裸后缀豁免、广告表误杀 9 条豁免)
 #      去广告 → 国内AI直连 → 海外AI → TestFlight/苹果/PT/电报 → 国内垂直流媒体
 #      → ChinaMedia → YouTube/Netflix/巴哈 → Google → GlobalMedia
@@ -73,7 +75,7 @@ FilterHK: &FilterHK "(?i)(港|HK|Hong)"
 FilterTW: &FilterTW "(?i)(台|TW|Tai)"
 FilterJP: &FilterJP "(?i)(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|JP|Japan)"
 FilterKR: &FilterKR "(?i)(KR|Korea|KOR|首尔|韩|韓)"
-FilterUS: &FilterUS "(?i)(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|US|United States)"
+FilterUS: &FilterUS "(?i)(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|(?:US|United States)(?![a-zA-Z]))"
 FilterSG: &FilterSG "(?i)(新加坡|坡|狮城|SG|Singapore)"
 
 # 地区手动选择组基础参数;配合 filter 只列出该地区节点
@@ -262,21 +264,21 @@ rules:
   - DOMAIN-SUFFIX,aria.ms,🪟 微软服务
   - DOMAIN-SUFFIX,ch9.ms,🪟 微软服务
   - DOMAIN-SUFFIX,dictate.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,google.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,google.ms,🌍 全球代理
   - DOMAIN-SUFFIX,hummingbird.ms,🪟 微软服务
   - DOMAIN-SUFFIX,jwt.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,nico.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,ntp.nat.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,nico.ms,🌍 全球代理
+  - DOMAIN-SUFFIX,ntp.nat.ms,🌍 全球代理
   - DOMAIN-SUFFIX,onestore.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,rsg.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,sm.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,rsg.ms,🌍 全球代理
+  - DOMAIN-SUFFIX,sm.ms,🌍 全球代理
   - DOMAIN-SUFFIX,staffhub.ms,🪟 微软服务
   - DOMAIN-SUFFIX,svc.ms,🪟 微软服务
   - DOMAIN-SUFFIX,techhub.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,visa.com.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,visa.com.ms,🌍 全球代理
   - DOMAIN-SUFFIX,wbd.ms,🪟 微软服务
   - DOMAIN-SUFFIX,gfx.ms,🪟 微软服务
-  - DOMAIN-SUFFIX,nyti.ms,🪟 微软服务
+  - DOMAIN-SUFFIX,nyti.ms,🌍 全球代理
   - DOMAIN-SUFFIX,sfx.ms,🪟 微软服务
   - DOMAIN-SUFFIX,futu.cn,🌍 全球代理
   - DOMAIN-SUFFIX,futubull.cn,🌍 全球代理
