@@ -319,7 +319,6 @@ rules:
   - RULE-SET,global,🌍 全球代理
 
   # GeoIP 兜底(与 Loon [Rule] 一致)
-  - DOMAIN-SUFFIX,kr,🇰🇷 韩国节点
   - GEOIP,KR,🇰🇷 韩国节点
   - GEOIP,TW,🇹🇼 台湾节点
   - GEOIP,CN,DIRECT
