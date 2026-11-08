@@ -24,7 +24,7 @@ allow-lan: false
 external-controller: 127.0.0.1:9090   # OpenWrt 上按需改 0.0.0.0:9090
 
 # ---------- GEO 数据库与自动更新(基于 Loyalsoldier/geoip) ----------
-geodata-mode: false                   # false: mmdb 格式(内存更小更轻量); true: dat 格式
+geodata-mode: true                    # true: dat 格式(读取 GEOIP.dat,兼容 OpenClash/FlClash 预装文件); false: mmdb 格式
 geodata-loader: memconservative       # 内存保守加载模式(适合路由器等嵌入式设备)
 geo-auto-update: true                 # 开启 GEO 数据自动更新
 geo-update-interval: 24               # 更新间隔(小时)
@@ -319,6 +319,7 @@ rules:
   - RULE-SET,global,🌍 全球代理
 
   # GeoIP 兜底(与 Loon [Rule] 一致)
+  - DOMAIN-SUFFIX,kr,🇰🇷 韩国节点
   - GEOIP,KR,🇰🇷 韩国节点
   - GEOIP,TW,🇹🇼 台湾节点
   - GEOIP,CN,DIRECT
