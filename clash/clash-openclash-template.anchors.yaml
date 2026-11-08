@@ -65,7 +65,7 @@ p: &p
   health-check:
     enable: false
     url: https://cp.cloudflare.com/generate_204
-    interval: 300
+    interval: 86400
 
 use-airport: &airport-ref
   - airport
