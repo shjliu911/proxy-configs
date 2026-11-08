@@ -63,8 +63,8 @@ p: &p
   interval: 86400
   path: ./providers/airport.yaml
   health-check:
-    enable: true
-    url: http://cp.cloudflare.com/generate_204
+    enable: false
+    url: https://cp.cloudflare.com/generate_204
     interval: 300
 
 use-airport: &airport-ref
