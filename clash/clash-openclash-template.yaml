@@ -354,6 +354,21 @@ rule-providers:
     url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Advertising/Advertising_Domain.yaml"
     path: ./rules/advertising.yaml
     interval: 86400
+  # 广告表误杀豁免：必须在 advertising 之前引用（独立小表，策略不同）
+  advertising-exempt-ms:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/AdvertisingExempt/AdvertisingExempt-Microsoft.yaml"
+    path: ./rules/advertising-exempt-ms.yaml
+    interval: 86400
+  advertising-exempt-global:
+    type: http
+    behavior: classical
+    format: yaml
+    url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/AdvertisingExempt/AdvertisingExempt-Global.yaml"
+    path: ./rules/advertising-exempt-global.yaml
+    interval: 86400
   hijacking:
     type: http
     behavior: classical
@@ -575,6 +590,8 @@ rules:
   - DOMAIN-SUFFIX,onetrust.com,🎥 奈飞视频
 
   # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
+  - RULE-SET,advertising-exempt-ms,🪟 微软服务
+  - RULE-SET,advertising-exempt-global,🌍 全球代理
   - RULE-SET,advertising,🛑 广告拦截
   - RULE-SET,hijacking,🛑 广告拦截
 

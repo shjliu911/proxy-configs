@@ -166,6 +166,9 @@ proxy-groups:
 # ---------- 规则集(镜像仓 + surge-ai-lists,与 Loon [Remote Rule] 同一批) ----------
 rule-providers:
   advertising: {<<: *rp_domain, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Advertising/Advertising_Domain.yaml", path: "./rules/advertising.yaml"}
+  # 广告表误杀豁免：必须在 advertising 之前引用（独立小表，策略不同）
+  advertising-exempt-ms: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/AdvertisingExempt/AdvertisingExempt-Microsoft.yaml", path: "./rules/advertising-exempt-ms.yaml"}
+  advertising-exempt-global: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/AdvertisingExempt/AdvertisingExempt-Global.yaml", path: "./rules/advertising-exempt-global.yaml"}
   hijacking: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/ios-rule-script-mirror/main/rule-no-keyword/Clash/Hijacking/Hijacking.yaml", path: "./rules/hijacking.yaml"}
   ai-cn: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-CN.yaml", path: "./rules/ai-cn.yaml"}
   ai-openai: {<<: *rp_classical, url: "https://raw.githubusercontent.com/shjliu911/surge-ai-lists/main/clash/AI-OpenAI.yaml", path: "./rules/ai-openai.yaml"}
@@ -224,6 +227,8 @@ rules:
   - DOMAIN-SUFFIX,onetrust.com,🎥 奈飞视频
 
   # ── 1. 去广告(拦截策略组，默认 REJECT，误杀时可切 DIRECT) ──
+  - RULE-SET,advertising-exempt-ms,🪟 微软服务
+  - RULE-SET,advertising-exempt-global,🌍 全球代理
   - RULE-SET,advertising,🛑 广告拦截
   - RULE-SET,hijacking,🛑 广告拦截
 
