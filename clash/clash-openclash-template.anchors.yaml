@@ -205,6 +205,14 @@ rules:
   - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
 
   # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
+  # 2026-11-08: 微软/LinkedIn 功能端点(非广告)被上游广告表误收 → 放行
+  - DOMAIN,presence.teams.live.com,🪟 微软服务
+  - DOMAIN,nexus.officeapps.live.com,🪟 微软服务
+  - DOMAIN,nexusrules.officeapps.live.com,🪟 微软服务
+  - DOMAIN-SUFFIX,crl.microsoft.com,🪟 微软服务
+  - DOMAIN-SUFFIX,glbdns.microsoft.com,🪟 微软服务
+  - DOMAIN-SUFFIX,c.microsoft.com,🪟 微软服务
+  - DOMAIN,platform.linkedin.com,🌍 全球代理
   - DOMAIN-SUFFIX,api.iplay.163.com,🎵 网易音乐
   - DOMAIN-SUFFIX,mam.netease.com,🎵 网易音乐
   - DOMAIN-SUFFIX,pgdt.gtimg.cn,🐧 腾讯视频
