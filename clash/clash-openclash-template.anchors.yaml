@@ -10,6 +10,15 @@
 #   1. proxy-providers 的 url 换成你的机场订阅(支持 v2ray/clash 格式)
 #   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
 #   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
+#
+# 2026-11-09 对齐 mihomo 官方 docs/config.yaml 重构:
+#   - DNS：补 direct-nameserver / proxy-server-nameserver；境外域名用 nameserver-policy 经代理组解析；
+#     移除 fallback——1.1.1.1 / dns.google 的 DoH 国内直连必超时，DIRECT 拨号解析失败时
+#     provider 拉取会报 `Get "...": EOF`（实测踩坑，详见 README）
+#   - 新增 find-process-mode / unified-delay / tcp-concurrent / keep-alive / profile 持久化
+#   - proxy-providers 显式 proxy: DIRECT + User-Agent + health-check(expected-status)
+#   - geox-url 补 geoip/geosite 的 jsdelivr 镜像
+#
 # 2026-11-03 修复审计:google.ms/nico.ms/ntp.nat.ms/rsg.ms/sm.ms/visa.com.ms/nyti.ms 7 个非微软域豁免改指 全球代理
 #      (原指 微软服务[DIRECT 默认],与豁免目的矛盾);美国组 filter 正则加词边界(RUS/AUS 不再误入);修正过时行号 3155→3177。
 #      (2026-10-30 审计补丁:微软服务直连表、.ms/.cn 裸后缀豁免、广告表误杀 9 条豁免)
@@ -23,20 +32,45 @@ ipv6: false
 allow-lan: false
 external-controller: 127.0.0.1:9090   # OpenWrt 上按需改 0.0.0.0:9090
 
-# ---------- GEO 数据库与自动更新(基于 Loyalsoldier/geoip) ---------
+# ---------- 内核行为（对齐 mihomo 官方 docs/config.yaml） ---------
+# 进程匹配：always / strict / off；路由器上无按进程分流需求可改 off 省 CPU
+find-process-mode: strict
+# 统一延迟测量口径 + TCP 并发握手取最快
+unified-delay: true
+tcp-concurrent: true
+# 长连接保活（秒）
+keep-alive-interval: 15
+keep-alive-idle: 600
+# 记住手动选择的节点与 fake-ip 映射，重启不丢
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# ---------- GEO 数据库与自动更新(对齐官方 geox-url) ---------
 geodata-mode: false
 geox-url:
+  geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
+  geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
   mmdb: "https://cdn.jsdelivr.net/gh/Loyalsoldier/geoip@release/Country.mmdb"
   asn: "https://cdn.jsdelivr.net/gh/Loyalsoldier/geoip@release/GeoLite2-ASN.mmdb"
 
 geo-auto-update: false # 是否自动更新 geodata
 geo-update-interval: 24 # 更新间隔，单位：小时
-# ---------- DNS(fake-ip 模式,Meta 内核;real-ip 白名单与 Loon 一致) ----------
+
+# ---------- DNS(fake-ip,对齐 mihomo 官方 docs/config.yaml) ----------
+# 要点:DIRECT 拨号必须有独立解析器(direct-nameserver)。不配时它会落到
+# nameserver/fallback 的 DoH 上,而 1.1.1.1 / dns.google 在国内直连必超时,
+# 表现为 provider 拉取 `EOF`、路由器自身直连域名解析失败。
 dns:
   enable: true
   listen: 0.0.0.0:1053
+  ipv6: false
+  prefer-h3: false
+  cache-algorithm: arc
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
+  fake-ip-ttl: 1
+  fake-ip-filter-mode: blacklist
   fake-ip-filter:
     - '*.lan'
     - '*.local'
@@ -50,18 +84,34 @@ dns:
     - '+.battlenet.com'
     - '+.blzstatic.cn'
     - '+.battle.net'
+  # 仅用于解析 DNS 服务器自身的域名,必须是纯 IP
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
+  # 主 DNS:国内 DoH,保证大陆域名解析精准
   nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
-  fallback:
-    - https://1.1.1.1/dns-query
-    - https://dns.google/dns-query
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
+  # 节点(机场)域名解析:走国内明文 DNS,避免 DoH 自举循环
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  # DIRECT 出口解析:与 DoH/fallback 解耦,防止直连解析被墙拖死
+  direct-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  direct-nameserver-follow-policy: false
+  # 境外域名 DNS 经代理组解析,防污染;组名需与 proxy-groups 一致
+  nameserver-policy:
+    "geosite:cn,private":
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+    "geosite:geolocation-!cn":
+      - "https://1.1.1.1/dns-query#🚀 节点选择"
+      - "https://dns.google/dns-query#🚀 节点选择"
+  # DNS 上游连接遵循 rules(官方要求 proxy-server-nameserver 非空)
+  respect-rules: true
+  use-hosts: true
 
 # ── 锚点定义区(顶层键仅供 YAML 引用,mihomo 会忽略) ─────────────
 
@@ -70,10 +120,20 @@ p: &p
   type: http
   interval: 86400
   path: ./providers/airport.yaml
+  # 订阅拉取走直连(依赖上面的 dns.direct-nameserver)。
+  # 若机场/转换站域名直连被墙,可改 proxy: 🚀 节点选择(需已有可用节点,注意鸡生蛋)
+  proxy: DIRECT
+  # 部分机场按 UA 下发不同格式,显式声明 Clash UA
+  header:
+    User-Agent:
+      - "Clash/v1.18.0"
+      - "mihomo/1.18.3"
   health-check:
-    enable: false
+    enable: true
     url: https://cp.cloudflare.com/generate_204
-    interval: 86400
+    expected-status: 204
+    interval: 600
+    lazy: true
 
 use-airport: &airport-ref
   - airport
