@@ -11,11 +11,11 @@
 #   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
 #   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
 #
-# 2026-11-09 规范修复与优化:
-#   - 修复 rule-providers 锚点缺少 proxy 参数的问题，补齐 `proxy: 🚀 节点选择`，解决 GitHub raw 规则集拉取超时
-#   - 修复 geox-url 中 mmdb / asn 遗留的被阻断 cdn.jsdelivr.net 域名，统一为 fastly.jsdelivr.net
-#   - 补齐 sniffer 嗅探器（自动嗅探 TLS SNI / HTTP Host，增强 OpenClash 透明代理与 TUN 模式分流）
-#   - rules 私网段精简为 `GEOIP,private,DIRECT,no-resolve`
+# 2026-11-09 代码审计回退与优化 (基于内核源码审计):
+#   - 【回退 P0】GEOIP,private 实际为死规则（mihomo 内核仅特判 GEOIP,lan 且不含 100.64 CGNAT），
+#     回退为显式完整 IP-CIDR / IP-CIDR6 列表，杜绝局域网与 Tailscale 漏入代理
+#   - 【调整 P2】sniffer 嗅探关闭 parse-pure-ip 降低软路由 CPU 负载，清理无效跳过项，标注 OpenClash 接管机制
+#   - 保留 rule-providers 的 `proxy: 🚀 节点选择`（解决 raw.github 封锁）及 geox-url 的 fastly 镜像
 #
 # 2026-11-09 对齐 mihomo 官方 docs/config.yaml 重构:
 #   - DNS：补 direct-nameserver / proxy-server-nameserver；境外域名用 nameserver-policy 经代理组解析；
@@ -63,10 +63,10 @@ geox-url:
 geo-auto-update: false # 是否自动更新 geodata
 geo-update-interval: 24 # 更新间隔，单位：小时
 
-# ---------- 流量与域名嗅探 (针对 OpenWrt 网关 / TUN 补充) ---------
+# ---------- 流量与域名嗅探 (对 Verge Rev / FlClash 生效；OpenClash 会由其 UCI 嗅探配置接管) ---------
 sniffer:
   enable: true
-  parse-pure-ip: true
+  parse-pure-ip: false # 路由器场景保持 false，节约 CPU 开销
   override-destination: false
   sniff:
     TLS:
@@ -74,7 +74,6 @@ sniffer:
     HTTP:
       ports: [80, 8080-8880]
   skip-domain:
-    - "Mijia Cloud"
     - "+.push.apple.com"
 
 # ---------- DNS(fake-ip,对齐 mihomo 官方 docs/config.yaml) ----------
@@ -291,7 +290,15 @@ rules:
   # 本地自定义(与 Loon [Rule] 对应,特例按需增删)
   - DOMAIN-SUFFIX,zwift.com,DIRECT
   - DOMAIN-SUFFIX,pool.ntp.org,DIRECT
-  - GEOIP,private,DIRECT,no-resolve
+  # 私网直连：使用显式 CIDR 最稳（兼容性最好，不依赖 MMDB，覆盖 100.64 CGNAT/Tailscale 及 IPv6）
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
 
   # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
   # 2026-11-08: 微软/LinkedIn 功能端点(非广告)被上游广告表误收 → 放行
