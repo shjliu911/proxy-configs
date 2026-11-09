@@ -39,8 +39,6 @@ allow-lan: false
 external-controller: 127.0.0.1:9090   # OpenWrt 上按需改 0.0.0.0:9090
 
 # ---------- 内核行为（对齐 mihomo 官方 docs/config.yaml） ---------
-# 进程匹配：always / strict / off；路由器上无按进程分流需求可改 off 省 CPU
-find-process-mode: strict
 # 统一延迟测量口径 + TCP 并发握手取最快
 unified-delay: true
 tcp-concurrent: true
