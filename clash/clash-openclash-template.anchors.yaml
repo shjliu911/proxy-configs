@@ -1,4 +1,4 @@
-# Clash / OpenClash 配置模板(与 loon/loon-template.conf 同构,本仓库以 Loon 为基准)
+﻿# Clash / OpenClash 配置模板(与 loon/loon-template.conf 同构,本仓库以 Loon 为基准)
 #
 # 适用:mihomo/Clash Meta 内核 —— OpenClash(OpenWrt)、Clash Verge Rev 等
 # 策略组命名、地区正则、分流顺序全部对齐 Loon 基准模板:
@@ -10,6 +10,12 @@
 #   1. proxy-providers 的 url 换成你的机场订阅(支持 v2ray/clash 格式)
 #   2. OpenClash:配置文件管理里上传,或在「第三方订阅转换」里引用 raw 链接
 #   3. 分流顺序(与 Loon [Remote Rule] 一一对应):
+#
+# 2026-11-09 规范修复与优化:
+#   - 修复 rule-providers 锚点缺少 proxy 参数的问题，补齐 `proxy: 🚀 节点选择`，解决 GitHub raw 规则集拉取超时
+#   - 修复 geox-url 中 mmdb / asn 遗留的被阻断 cdn.jsdelivr.net 域名，统一为 fastly.jsdelivr.net
+#   - 补齐 sniffer 嗅探器（自动嗅探 TLS SNI / HTTP Host，增强 OpenClash 透明代理与 TUN 模式分流）
+#   - rules 私网段精简为 `GEOIP,private,DIRECT,no-resolve`
 #
 # 2026-11-09 对齐 mihomo 官方 docs/config.yaml 重构:
 #   - DNS：补 direct-nameserver / proxy-server-nameserver；境外域名用 nameserver-policy 经代理组解析；
@@ -51,11 +57,25 @@ geodata-mode: false
 geox-url:
   geoip: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat"
   geosite: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat"
-  mmdb: "https://cdn.jsdelivr.net/gh/Loyalsoldier/geoip@release/Country.mmdb"
-  asn: "https://cdn.jsdelivr.net/gh/Loyalsoldier/geoip@release/GeoLite2-ASN.mmdb"
+  mmdb: "https://fastly.jsdelivr.net/gh/Loyalsoldier/geoip@release/Country.mmdb"
+  asn: "https://fastly.jsdelivr.net/gh/Loyalsoldier/geoip@release/GeoLite2-ASN.mmdb"
 
 geo-auto-update: false # 是否自动更新 geodata
 geo-update-interval: 24 # 更新间隔，单位：小时
+
+# ---------- 流量与域名嗅探 (针对 OpenWrt 网关 / TUN 补充) ---------
+sniffer:
+  enable: true
+  parse-pure-ip: true
+  override-destination: false
+  sniff:
+    TLS:
+      ports: [443, 8443]
+    HTTP:
+      ports: [80, 8080-8880]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
 
 # ---------- DNS(fake-ip,对齐 mihomo 官方 docs/config.yaml) ----------
 # 要点:DIRECT 拨号必须有独立解析器(direct-nameserver)。不配时它会落到
@@ -171,8 +191,9 @@ SelectDirect: &SelectDirect {type: select, proxies: [DIRECT]}
 SelectDirectNode: &SelectDirectNode {type: select, proxies: [DIRECT, 🚀 节点选择]}
 
 # 规则提供者基础参数
-rp_domain: &rp_domain {type: http, behavior: domain, format: yaml, interval: 86400}
-rp_classical: &rp_classical {type: http, behavior: classical, format: yaml, interval: 86400}
+# 规则提供者基础参数(proxy: 🚀 节点选择 确保国内能拉取 GitHub Raw 上的规则)
+rp_domain: &rp_domain {type: http, behavior: domain, format: yaml, interval: 86400, proxy: 🚀 节点选择}
+rp_classical: &rp_classical {type: http, behavior: classical, format: yaml, interval: 86400, proxy: 🚀 节点选择}
 
 # ---------- 机场订阅(替换成你自己的) ----------
 proxy-providers:
@@ -270,10 +291,7 @@ rules:
   # 本地自定义(与 Loon [Rule] 对应,特例按需增删)
   - DOMAIN-SUFFIX,zwift.com,DIRECT
   - DOMAIN-SUFFIX,pool.ntp.org,DIRECT
-  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
-  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
-  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
-  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+  - GEOIP,private,DIRECT,no-resolve
 
   # ── 0.9 广告表误杀豁免(上游 Advertising_Domain.yaml 误收的正常服务域,按下游命中表的目标组放行) ──
   # 2026-11-08: 微软/LinkedIn 功能端点(非广告)被上游广告表误收 → 放行
