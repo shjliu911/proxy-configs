@@ -17,10 +17,12 @@
 #   - 【调整 P2】sniffer 嗅探关闭 parse-pure-ip 降低软路由 CPU 负载，清理无效跳过项，标注 OpenClash 接管机制
 #   - 保留 rule-providers 的 `proxy: 🚀 节点选择`（解决 raw.github 封锁）及 geox-url 的 fastly 镜像
 #
-# 2026-11-09 对齐 mihomo 官方 docs/config.yaml 重构:
-#   - DNS：补 direct-nameserver / proxy-server-nameserver；境外域名用 nameserver-policy 经代理组解析；
-#     移除 fallback——1.1.1.1 / dns.google 的 DoH 国内直连必超时，DIRECT 拨号解析失败时
-#     provider 拉取会报 `Get "...": EOF`（实测踩坑，详见 README）
+# 2026-11-09 DNS 优化修复 (方案 A: Fake-IP 纯净远端解析模式):
+#   - 修复 OpenClash 脚本分词 Bug: 彻底移除 nameserver-policy 中的 `https://1.1.1.1/dns-query#🚀 节点选择`。
+#     因空格分词导致“节点选择”被当作独立域名向 223.5.5.5 查询报 NXDOMAIN，且代理组匹配失败引发境外 DNS 全死。
+#   - 践行 Fake-IP 核心原则: 境外域名全部由远端代理节点解析，本地零解析零污染零延迟，彻底杜绝鸡生蛋死锁。
+#   - 强化 fake-ip-filter: 补充常见 NTP、STUN 域名，确保局域网与校时协议直连精准。
+#   - GEOIP,CN 补充 no-resolve: 防止未命中规则的境外域名被反向触发国内 DNS 解析。
 #   - 新增 find-process-mode / unified-delay / tcp-concurrent / keep-alive / profile 持久化
 #   - proxy-providers 显式 proxy: DIRECT + User-Agent + health-check(expected-status)
 #   - geox-url 补 geoip/geosite 的 jsdelivr 镜像
@@ -74,10 +76,13 @@ sniffer:
   skip-domain:
     - "+.push.apple.com"
 
-# ---------- DNS(fake-ip,对齐 mihomo 官方 docs/config.yaml) ----------
-# 要点:DIRECT 拨号必须有独立解析器(direct-nameserver)。不配时它会落到
-# nameserver/fallback 的 DoH 上,而 1.1.1.1 / dns.google 在国内直连必超时,
-# 表现为 provider 拉取 `EOF`、路由器自身直连域名解析失败。
+# ---------- DNS(fake-ip,对齐 mihomo 官方与 OpenClash 最佳实践) ----------
+# 要点:
+# 1. DIRECT 独立解析器(direct-nameserver): 避免 provider 拉取及直连解析被海外 DoH 拖超时
+# 2. proxy-server-nameserver: 专门直连解析机场节点域名，绝不走代理，破除鸡生蛋死锁
+# 3. fake-ip 纯净模式: 境外域名完全由远端代理节点解析，本地返回 fake-ip 即可，无需在本地跨代理查询 1.1.1.1
+# 4. 严禁在 URL 后缀 (#) 中包含空格与 Emoji（如 #🚀 节点选择），OpenClash 脚本分词会将其切开，
+#    导致“节点选择”被当作独立域名向 223.5.5.5 查询引发 NXDOMAIN，且代理组匹配失败导致境外 DNS 全死。
 dns:
   enable: true
   listen: 0.0.0.0:1053
@@ -93,6 +98,14 @@ dns:
     - '*.local'
     - '*.msftconnecttest.com'
     - '*.msftncsi.com'
+    - 'time.*.com'
+    - 'time.*.gov'
+    - 'time.*.edu.cn'
+    - 'time.windows.com'
+    - 'pool.ntp.org'
+    - '+.pool.ntp.org'
+    - 'stun.*'
+    - '+.stun.*'
     - '+.srv.nintendo.net'
     - '+.stun.playstation.net'
     - 'xbox.*.microsoft.com'
@@ -105,27 +118,24 @@ dns:
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-  # 主 DNS:国内 DoH,保证大陆域名解析精准
+  # 主 DNS: 国内 DoH, 保证大陆域名解析精准
   nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
-  # 节点(机场)域名解析:走国内明文 DNS,避免 DoH 自举循环
+  # 节点(机场)域名解析: 走国内明文 DNS, 避免 DoH 自举循环
   proxy-server-nameserver:
     - 223.5.5.5
     - 119.29.29.29
-  # DIRECT 出口解析:与 DoH/fallback 解耦,防止直连解析被墙拖死
+  # DIRECT 出口解析: 与 DoH/fallback 解耦, 防止直连解析被墙拖死
   direct-nameserver:
     - 223.5.5.5
     - 119.29.29.29
   direct-nameserver-follow-policy: false
-  # 境外域名 DNS 经代理组解析,防污染;组名需与 proxy-groups 一致
+  # 内网及局域网保留域名策略解析
   nameserver-policy:
-    "geosite:cn,private":
-      - https://dns.alidns.com/dns-query
-      - https://doh.pub/dns-query
-    "geosite:geolocation-!cn":
-      - "https://1.1.1.1/dns-query#🚀 节点选择"
-      - "https://dns.google/dns-query#🚀 节点选择"
+    'geosite:private':
+      - 223.5.5.5
+      - 119.29.29.29
   # DNS 上游连接遵循 rules(官方要求 proxy-server-nameserver 非空)
   respect-rules: true
   use-hosts: true
@@ -401,7 +411,7 @@ rules:
   # GeoIP 兜底(与 Loon [Rule] 一致)
   - GEOIP,KR,🇰🇷 韩国节点
   - GEOIP,TW,🇹🇼 台湾节点
-  - GEOIP,CN,DIRECT
+  - GEOIP,CN,DIRECT,no-resolve
 
   # 最终兜底
   - MATCH,🎯 FINAL
